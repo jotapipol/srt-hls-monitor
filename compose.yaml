@@ -14,6 +14,23 @@ services:
         max-size: "50m"
         max-file: "3"
 
+  transcoder:
+    build: ./transcoder
+    container_name: srt-transcoder
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./data/hls_preview:/data/hls_preview
+    environment:
+      - MEDIAMTX_API=http://localhost:9997
+      - HLS_SRC_BASE=http://localhost:8888
+      - OUTPUT_DIR=/data/hls_preview
+      - POLL_INTERVAL=3
+      - PREVIEW_BITRATE=1500k
+      - FFMPEG_PRESET=veryfast
+    depends_on:
+      - mediamtx
+
   exporter:
     image: python:3.11-slim
     container_name: mediamtx-exporter
@@ -71,6 +88,7 @@ services:
     volumes:
       - ./monitor/html:/usr/share/nginx/html:ro
       - ./monitor/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./data/hls_preview:/data/hls_preview:ro
 
   speedtest:
     image: openspeedtest/latest

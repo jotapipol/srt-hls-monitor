@@ -6,149 +6,46 @@
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.7/dist/hls.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: #0f1117;
-    color: #e2e8f0;
-    font-family: 'Inter', system-ui, sans-serif;
-    padding: 20px;
-  }
-
-  header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 24px;
-    border-bottom: 1px solid #1e2433;
-    padding-bottom: 16px;
-  }
-
+  body { background: #0f1117; color: #e2e8f0; font-family: Inter, system-ui, sans-serif; padding: 20px; }
+  header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; border-bottom: 1px solid #1e2433; padding-bottom: 16px; }
   header h1 { font-size: 1.2rem; font-weight: 600; color: #fff; }
-
-  #status {
-    margin-left: auto;
-    font-size: 0.75rem;
-    color: #64748b;
-  }
-
-  #no-streams {
-    text-align: center;
-    color: #475569;
-    margin-top: 80px;
-    font-size: 1rem;
-  }
-
-  #grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
-    gap: 20px;
-  }
-
-  .card {
-    background: #161b2e;
-    border: 1px solid #1e2a45;
-    border-radius: 10px;
-    overflow: hidden;
-    transition: opacity 0.3s;
-  }
-
-  .card.fade-in  { animation: fadeIn 0.4s ease; }
+  #status { margin-left: auto; font-size: .75rem; color: #64748b; }
+  #no-streams { text-align: center; color: #475569; margin-top: 80px; font-size: 1rem; }
+  #grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(480px, 1fr)); gap: 20px; }
+  .card { background: #161b2e; border: 1px solid #1e2a45; border-radius: 10px; overflow: hidden; transition: opacity .3s; }
+  .card.fade-in { animation: fadeIn .4s ease; }
   .card.fade-out { opacity: 0; }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  .video-wrap {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 16/9;
-    background: #000;
-  }
-
-  video {
-    width: 100%;
-    height: 100%;
-    display: block;
-  }
-
-  .badge-live {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background: #ef4444;
-    color: #fff;
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    padding: 2px 7px;
-    border-radius: 4px;
-  }
-
-  .btn-audio {
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    background: rgba(0,0,0,0.6);
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 6px;
-    color: #fff;
-    font-size: 1.1rem;
-    width: 34px;
-    height: 34px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background 0.15s;
-    user-select: none;
-  }
-
-  .btn-audio:hover { background: rgba(0,0,0,0.85); }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .video-wrap { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; }
+  video { width: 100%; height: 100%; display: block; }
+  .badge-live { position: absolute; top: 10px; left: 10px; background: #ef4444; color: #fff; font-size: .65rem; font-weight: 700; letter-spacing: .08em; padding: 2px 7px; border-radius: 4px; }
+  .badge-preview { position: absolute; top: 10px; left: 56px; background: #334155; color: #94a3b8; font-size: .65rem; font-weight: 600; padding: 2px 7px; border-radius: 4px; }
+  .btn-audio { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,.6); border: 1px solid rgba(255,255,255,.2); border-radius: 6px; color: #fff; font-size: 1.1rem; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background .15s; user-select: none; }
+  .btn-audio:hover { background: rgba(0,0,0,.85); }
   .btn-audio.active { background: #2563eb; border-color: #3b82f6; }
-
-  .metrics {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1px;
-    background: #1e2433;
-    border-top: 1px solid #1e2433;
-  }
-
-  .metric {
-    background: #161b2e;
-    padding: 10px 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-  }
-
-  .metric-label {
-    font-size: 0.65rem;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-
-  .metric-value {
-    font-size: 1.05rem;
-    font-weight: 600;
-    color: #e2e8f0;
-  }
-
-  .metric-value.green { color: #22c55e; }
+  .btn-hd { position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,.6); border: 1px solid rgba(255,255,255,.2); border-radius: 6px; color: #94a3b8; font-size: .7rem; font-weight: 700; letter-spacing: .06em; padding: 0 10px; height: 34px; display: flex; align-items: center; gap: 5px; cursor: pointer; transition: background .15s, color .15s, border-color .15s; user-select: none; }
+  .btn-hd:hover { background: rgba(37,99,235,.7); border-color: #3b82f6; color: #fff; }
+  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: #1e2433; border-top: 1px solid #1e2433; }
+  .metric { background: #161b2e; padding: 10px 14px; display: flex; flex-direction: column; gap: 3px; }
+  .metric-label { font-size: .65rem; color: #64748b; text-transform: uppercase; letter-spacing: .06em; }
+  .metric-value { font-size: 1.05rem; font-weight: 600; color: #e2e8f0; }
+  .metric-value.green  { color: #22c55e; }
   .metric-value.yellow { color: #eab308; }
-  .metric-value.red { color: #ef4444; }
-
-  .stream-name {
-    padding: 10px 14px 0;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #94a3b8;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
+  .metric-value.red    { color: #ef4444; }
+  .stream-name { padding: 10px 14px 0; font-size: .8rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: .08em; }
+  /* Modal */
+  #modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.88); z-index: 1000; align-items: center; justify-content: center; flex-direction: column; gap: 14px; padding: 24px; }
+  #modal-overlay.open { display: flex; }
+  #modal-box { background: #0f1117; border: 1px solid #1e2a45; border-radius: 12px; overflow: hidden; width: 100%; max-width: 1280px; }
+  #modal-header { display: flex; align-items: center; padding: 12px 16px; gap: 10px; border-bottom: 1px solid #1e2433; }
+  #modal-title { font-size: .85rem; font-weight: 600; color: #e2e8f0; text-transform: uppercase; letter-spacing: .08em; flex: 1; }
+  .badge-hd { background: #1d4ed8; color: #bfdbfe; font-size: .65rem; font-weight: 700; letter-spacing: .08em; padding: 2px 7px; border-radius: 4px; }
+  #modal-btn-audio { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.15); border-radius: 6px; color: #e2e8f0; font-size: 1.1rem; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background .15s; }
+  #modal-btn-audio.active { background: #2563eb; border-color: #3b82f6; }
+  #modal-close { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.15); border-radius: 6px; color: #94a3b8; font-size: 1.2rem; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background .15s, color .15s; }
+  #modal-close:hover { background: #ef4444; color: #fff; border-color: #ef4444; }
+  #modal-video-wrap { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; }
+  #modal-video { width: 100%; height: 100%; display: block; }
 </style>
 </head>
 <body>
@@ -161,159 +58,188 @@
 <div id="no-streams" style="display:none">Sin streams activos</div>
 <div id="grid"></div>
 
-<script>
-const HLS_BASE = `http://${location.hostname}:8888`;
-const API_BASE = '/api/mediamtx';
-const POLL_MS  = 2000;
+<!-- Modal full quality -->
+<div id="modal-overlay">
+  <div id="modal-box">
+    <div id="modal-header">
+      <span id="modal-title">&mdash;</span>
+      <span class="badge-hd">FULL HD</span>
+      <button id="modal-btn-audio" title="Audio">&#128263;</button>
+      <button id="modal-close" title="Cerrar">&#x2715;</button>
+    </div>
+    <div id="modal-video-wrap">
+      <video id="modal-video" autoplay muted playsinline></video>
+    </div>
+  </div>
+</div>
 
-const cards  = {};  // path → { el, hls, srtId }
+<script>
+const PREV = '/hls-preview';
+const FULL = '/hls-full';
+const API  = '/api/mediamtx';
+const POLL = 2000;
+
+const cards  = {};
 const grid   = document.getElementById('grid');
 const noStr  = document.getElementById('no-streams');
 const status = document.getElementById('status');
+
+const overlay = document.getElementById('modal-overlay');
+const mTitle  = document.getElementById('modal-title');
+const mVideo  = document.getElementById('modal-video');
+const mAudio  = document.getElementById('modal-btn-audio');
+const mClose  = document.getElementById('modal-close');
+let mHls = null;
+
+function openModal(path) {
+  mTitle.textContent = path;
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  const src = FULL + '/' + path + '/index.m3u8';
+  mVideo.muted = true;
+  mAudio.classList.remove('active');
+  mAudio.textContent = '\uD83D\uDD07';
+  if (Hls.isSupported()) {
+    mHls = new Hls({ lowLatencyMode: true, liveSyncDurationCount: 2 });
+    mHls.loadSource(src);
+    mHls.attachMedia(mVideo);
+  } else if (mVideo.canPlayType('application/vnd.apple.mpegurl')) {
+    mVideo.src = src;
+  }
+}
+
+function closeModal() {
+  overlay.classList.remove('open');
+  document.body.style.overflow = '';
+  if (mHls) { mHls.destroy(); mHls = null; }
+  mVideo.src = '';
+  mVideo.muted = true;
+}
+
+mClose.addEventListener('click', closeModal);
+overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+mAudio.addEventListener('click', () => {
+  mVideo.muted = !mVideo.muted;
+  mAudio.classList.toggle('active', !mVideo.muted);
+  mAudio.textContent = mVideo.muted ? '\uD83D\uDD07' : '\uD83D\uDD0A';
+});
 
 function colorRTT(v)  { return v < 50 ? 'green' : v < 150 ? 'yellow' : 'red'; }
 function colorDrop(v) { return v === 0 ? 'green' : v < 100 ? 'yellow' : 'red'; }
 
 function muteAll() {
   for (const path of Object.keys(cards)) {
-    const video = cards[path].el.querySelector('video');
-    const btn   = cards[path].el.querySelector('.btn-audio');
-    if (video) video.muted = true;
-    if (btn)   { btn.classList.remove('active'); btn.textContent = '🔇'; }
+    const v = cards[path].el.querySelector('video');
+    const b = cards[path].el.querySelector('.btn-audio');
+    if (v) v.muted = true;
+    if (b) { b.classList.remove('active'); b.textContent = '\uD83D\uDD07'; }
   }
 }
 
 function createCard(path) {
-  const el = document.createElement('div');
+  const el  = document.createElement('div');
   el.className = 'card fade-in';
-  el.innerHTML = `
-    <div class="stream-name">${path}</div>
-    <div class="video-wrap">
-      <video autoplay muted playsinline></video>
-      <span class="badge-live">LIVE</span>
-      <button class="btn-audio" title="Activar audio">🔇</button>
-    </div>
-    <div class="metrics">
-      <div class="metric">
-        <span class="metric-label">Bitrate</span>
-        <span class="metric-value" id="m-bitrate-${path}">—</span>
-      </div>
-      <div class="metric">
-        <span class="metric-label">RTT</span>
-        <span class="metric-value" id="m-rtt-${path}">—</span>
-      </div>
-      <div class="metric">
-        <span class="metric-label">Drops sesión</span>
-        <span class="metric-value" id="m-drops-${path}">—</span>
-      </div>
-      <div class="metric">
-        <span class="metric-label">Loss detectado</span>
-        <span class="metric-value" id="m-loss-${path}">—</span>
-      </div>
-    </div>
-  `;
+  const sid = path.replace(/[^a-zA-Z0-9_-]/g, '_');
+  el.innerHTML =
+    '<div class="stream-name">' + path + '</div>' +
+    '<div class="video-wrap">' +
+      '<video autoplay muted playsinline></video>' +
+      '<span class="badge-live">LIVE</span>' +
+      '<span class="badge-preview">480p</span>' +
+      '<button class="btn-hd">&#9654; HD</button>' +
+      '<button class="btn-audio">&#128263;</button>' +
+    '</div>' +
+    '<div class="metrics">' +
+      '<div class="metric"><span class="metric-label">Bitrate</span><span class="metric-value" id="m-b-' + sid + '">&mdash;</span></div>' +
+      '<div class="metric"><span class="metric-label">RTT</span><span class="metric-value" id="m-r-' + sid + '">&mdash;</span></div>' +
+      '<div class="metric"><span class="metric-label">Drops</span><span class="metric-value" id="m-d-' + sid + '">&mdash;</span></div>' +
+      '<div class="metric"><span class="metric-label">Loss</span><span class="metric-value" id="m-l-' + sid + '">&mdash;</span></div>' +
+    '</div>';
   grid.appendChild(el);
 
-  const video = el.querySelector('video');
-  const btn   = el.querySelector('.btn-audio');
-  const src   = `${HLS_BASE}/${path}/index.m3u8`;
+  const vid = el.querySelector('video');
+  const bAu = el.querySelector('.btn-audio');
+  const bHD = el.querySelector('.btn-hd');
+  const src = PREV + '/' + path + '/index.m3u8';
 
-  btn.addEventListener('click', () => {
-    if (video.muted) {
-      muteAll();
-      video.muted = false;
-      btn.classList.add('active');
-      btn.textContent = '🔊';
+  bAu.addEventListener('click', () => {
+    if (vid.muted) {
+      muteAll(); vid.muted = false; bAu.classList.add('active'); bAu.textContent = '\uD83D\uDD0A';
     } else {
-      video.muted = true;
-      btn.classList.remove('active');
-      btn.textContent = '🔇';
+      vid.muted = true; bAu.classList.remove('active'); bAu.textContent = '\uD83D\uDD07';
     }
   });
+  bHD.addEventListener('click', () => openModal(path));
 
   if (Hls.isSupported()) {
-    const hls = new Hls({ lowLatencyMode: true, liveSyncDurationCount: 2 });
-    hls.loadSource(src);
-    hls.attachMedia(video);
-    cards[path].hls = hls;
-  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-    video.src = src;
+    const h = new Hls({ lowLatencyMode: true, liveSyncDurationCount: 2 });
+    h.loadSource(src);
+    h.attachMedia(vid);
+    cards[path].hls = h;
+  } else if (vid.canPlayType('application/vnd.apple.mpegurl')) {
+    vid.src = src;
   }
-
   return el;
 }
 
 function removeCard(path) {
   const c = cards[path];
   if (!c) return;
-  if (c.hls) { c.hls.destroy(); }
+  if (c.hls) c.hls.destroy();
   c.el.classList.add('fade-out');
   setTimeout(() => { c.el.remove(); delete cards[path]; }, 350);
 }
 
-function updateMetrics(path, srtData) {
-  if (!srtData) return;
-
-  const bitrate = srtData.mbpsReceiveRate?.toFixed(1) ?? '—';
-  const rtt     = Math.round(srtData.msRTT ?? 0);
-  const drops   = srtData.packetsReceivedDrop ?? 0;
-  const loss    = srtData.packetsReceivedLoss ?? 0;
-
-  const elB = document.getElementById(`m-bitrate-${path}`);
-  const elR = document.getElementById(`m-rtt-${path}`);
-  const elD = document.getElementById(`m-drops-${path}`);
-  const elL = document.getElementById(`m-loss-${path}`);
-
-  if (elB) { elB.textContent = `${bitrate} Mbps`; }
-  if (elR) { elR.textContent = `${rtt} ms`; elR.className = `metric-value ${colorRTT(rtt)}`; }
-  if (elD) { elD.textContent = drops; elD.className = `metric-value ${colorDrop(drops)}`; }
-  if (elL) { elL.textContent = loss; }
+function updateMetrics(path, d) {
+  if (!d) return;
+  const sid = path.replace(/[^a-zA-Z0-9_-]/g, '_');
+  const b  = d.mbpsReceiveRate != null ? d.mbpsReceiveRate.toFixed(1) : '\u2014';
+  const r  = Math.round(d.msRTT ?? 0);
+  const dr = d.packetsReceivedDrop ?? 0;
+  const lo = d.packetsReceivedLoss ?? 0;
+  const eB = document.getElementById('m-b-' + sid);
+  const eR = document.getElementById('m-r-' + sid);
+  const eD = document.getElementById('m-d-' + sid);
+  const eL = document.getElementById('m-l-' + sid);
+  if (eB) eB.textContent = b + ' Mbps';
+  if (eR) { eR.textContent = r + ' ms'; eR.className = 'metric-value ' + colorRTT(r); }
+  if (eD) { eD.textContent = dr; eD.className = 'metric-value ' + colorDrop(dr); }
+  if (eL) eL.textContent = lo;
 }
 
 async function poll() {
   try {
-    const [pathsRes, connsRes] = await Promise.all([
-      fetch(`${API_BASE}/v3/paths/list`),
-      fetch(`${API_BASE}/v3/srtconns/list`)
+    const [pR, cR] = await Promise.all([
+      fetch(API + '/v3/paths/list'),
+      fetch(API + '/v3/srtconns/list')
     ]);
+    const paths = (await pR.json()).items ?? [];
+    const conns = (await cR.json()).items ?? [];
 
-    const paths = (await pathsRes.json()).items ?? [];
-    const conns = (await connsRes.json()).items ?? [];
+    const sbp = {};
+    for (const c of conns) { if (c.state === 'publish') sbp[c.path] = c; }
 
-    // Mapa path → stats SRT
-    const srtByPath = {};
-    for (const c of conns) {
-      if (c.state === 'publish') srtByPath[c.path] = c;
+    const active = new Set(paths.filter(p => p.ready).map(p => p.name));
+
+    for (const path of active) {
+      if (!cards[path]) { cards[path] = { el: null, hls: null }; cards[path].el = createCard(path); }
+      updateMetrics(path, sbp[path]);
     }
-
-    const activePaths = new Set(
-      paths.filter(p => p.ready).map(p => p.name)
-    );
-
-    // Agregar nuevos
-    for (const path of activePaths) {
-      if (!cards[path]) {
-        cards[path] = { el: null, hls: null };
-        cards[path].el = createCard(path);
-      }
-      updateMetrics(path, srtByPath[path]);
-    }
-
-    // Eliminar los que ya no están
     for (const path of Object.keys(cards)) {
-      if (!activePaths.has(path)) removeCard(path);
+      if (!active.has(path)) removeCard(path);
     }
 
-    noStr.style.display = activePaths.size === 0 ? 'block' : 'none';
-    status.textContent = `${activePaths.size} stream${activePaths.size !== 1 ? 's' : ''} · actualizado ${new Date().toLocaleTimeString()}`;
-
+    noStr.style.display = active.size === 0 ? 'block' : 'none';
+    status.textContent = active.size + ' stream' + (active.size !== 1 ? 's' : '') +
+                         ' \u00b7 actualizado ' + new Date().toLocaleTimeString();
   } catch (e) {
-    status.textContent = `error: ${e.message}`;
+    status.textContent = 'error: ' + e.message;
   }
 }
 
 poll();
-setInterval(poll, POLL_MS);
+setInterval(poll, POLL);
 </script>
 </body>
 </html>
