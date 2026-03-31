@@ -1,0 +1,89 @@
+services:
+
+  mediamtx:
+    image: bluenviron/mediamtx:latest
+    container_name: mediamtx
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./conf/mediamtx.yml:/mediamtx.yml
+      - ./data/hls:/data/hls
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+  exporter:
+    image: python:3.11-slim
+    container_name: mediamtx-exporter
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./exporter:/app
+    command: sh -c "pip install -q prometheus_client requests && python /app/exporter.py"
+    environment:
+      - MEDIAMTX_API=http://localhost:9997
+      - EXPORTER_PORT=9999
+      - POLL_INTERVAL=1
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: unless-stopped
+    networks:
+      - monitoring
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=30d"
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    networks:
+      - monitoring
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/etc/grafana/provisioning/dashboards/mediamtx.json
+
+  monitor:
+    image: nginx:alpine
+    container_name: srt-monitor-ui
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "${MONITOR_PORT:-8900}:80"
+    volumes:
+      - ./monitor/html:/usr/share/nginx/html:ro
+      - ./monitor/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+
+  speedtest:
+    image: openspeedtest/latest
+    container_name: openspeedtest
+    restart: unless-stopped
+    ports:
+      - "${SPEEDTEST_PORT:-9800}:3000"
+      - "${SPEEDTEST_PORT_SSL:-9801}:3001"
+
+networks:
+  monitoring:
+    driver: bridge
+
+volumes:
+  prometheus_data:
+  grafana_data:

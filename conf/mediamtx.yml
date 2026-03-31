@@ -1,0 +1,51 @@
+logLevel: info
+logDestinations: [stdout]
+
+# API REST
+api: yes
+apiAddress: :9997
+
+# Prometheus metrics
+metrics: yes
+metricsAddress: :9998
+
+# Protocolos deshabilitados
+rtsp: no
+rtmp: no
+webrtc: no
+
+# SRT: entrada de señales
+srt: yes
+srtAddress: :8890
+
+# HLS: entrega de señales
+hls: yes
+hlsAddress: :8888
+hlsAllowOrigins: ["*"]
+hlsAlwaysRemux: yes
+hlsVariant: mpegts
+hlsSegmentCount: 6
+hlsSegmentDuration: 2s
+hlsPartDuration: 200ms
+hlsSegmentMaxSize: 50MB
+hlsDirectory: /data/hls
+
+# Permitir acceso a la API desde cualquier IP (nginx proxy container)
+authInternalUsers:
+  - user: any
+    pass:
+    ips: []
+    permissions:
+      - action: api
+      - action: read
+      - action: publish
+      - action: playback
+      - action: metrics
+
+# Acepta cualquier stream entrante
+pathDefaults:
+  record: no
+
+paths:
+  "~.*":
+    source: publisher

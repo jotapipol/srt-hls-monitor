@@ -1,0 +1,190 @@
+{
+  "uid": "mediamtx-srt",
+  "title": "SRT Monitor - MediaMTX",
+  "tags": ["srt", "streaming", "mediamtx"],
+  "timezone": "browser",
+  "refresh": "1s",
+  "schemaVersion": 38,
+  "time": {"from": "now-30m", "to": "now"},
+  "panels": [
+
+    {
+      "id": 1, "type": "row", "title": "ESTADO DEL STREAM",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0}, "collapsed": false
+    },
+    {
+      "id": 2, "type": "stat", "title": "Streams activos",
+      "gridPos": {"h": 4, "w": 3, "x": 0, "y": 1},
+      "options": {"colorMode": "background", "reduceOptions": {"calcs": ["lastNotNull"]}},
+      "fieldConfig": {"defaults": {"thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": 0}, {"color": "green", "value": 1}]}, "color": {"mode": "thresholds"}}}
+      ,
+      "targets": [{"datasource": {"uid": "prometheus"}, "expr": "count(mtx_srt_connected == 1) or vector(0)", "refId": "A"}]
+    },
+    {
+      "id": 3, "type": "stat", "title": "Bitrate total",
+      "gridPos": {"h": 4, "w": 3, "x": 3, "y": 1},
+      "options": {"colorMode": "background", "reduceOptions": {"calcs": ["lastNotNull"]}},
+      "fieldConfig": {"defaults": {"unit": "Mbps", "decimals": 1, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": 0}, {"color": "green", "value": 0.5}]}, "color": {"mode": "thresholds"}}},
+      "targets": [{"datasource": {"uid": "prometheus"}, "expr": "sum(mtx_srt_recv_rate_mbps) or vector(0)", "refId": "A"}]
+    },
+    {
+      "id": 4, "type": "stat", "title": "Drops sesión por stream",
+      "gridPos": {"h": 4, "w": 18, "x": 6, "y": 1},
+      "options": {"colorMode": "background", "orientation": "auto", "textMode": "auto", "reduceOptions": {"calcs": ["lastNotNull"]}},
+      "fieldConfig": {"defaults": {"decimals": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": 0}, {"color": "yellow", "value": 1}, {"color": "red", "value": 100}]}, "color": {"mode": "thresholds"}}},
+      "targets": [{"datasource": {"uid": "prometheus"}, "expr": "max by (path)(mtx_srt_pkt_drop_total)", "legendFormat": "{{path}}", "refId": "A"}]
+    },
+
+    {
+      "id": 10, "type": "row", "title": "BITRATE",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 5}, "collapsed": false
+    },
+    {
+      "id": 11, "type": "stat", "title": "Bitrate por stream (Mbps)",
+      "gridPos": {"h": 4, "w": 24, "x": 0, "y": 6},
+      "options": {"colorMode": "background", "orientation": "auto", "textMode": "auto", "reduceOptions": {"calcs": ["lastNotNull"]}},
+      "fieldConfig": {"defaults": {"unit": "Mbps", "decimals": 1, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": 0}, {"color": "green", "value": 0.5}]}, "color": {"mode": "thresholds"}}},
+      "targets": [{"datasource": {"uid": "prometheus"}, "expr": "max by (path)(mtx_srt_recv_rate_mbps)", "legendFormat": "{{path}}", "refId": "A"}]
+    },
+    {
+      "id": 12, "type": "timeseries", "title": "Bitrate por stream (Mbps)",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 10},
+      "fieldConfig": {"defaults": {"unit": "Mbps", "decimals": 2, "custom": {"lineWidth": 2, "fillOpacity": 10}, "color": {"mode": "palette-classic"}}},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "max", "mean"]}, "tooltip": {"mode": "multi"}},
+      "targets": [{"datasource": {"uid": "prometheus"}, "expr": "max by (path)(mtx_srt_recv_rate_mbps)", "legendFormat": "{{path}}", "refId": "A"}]
+    },
+
+    {
+      "id": 20, "type": "row", "title": "DROPS (pérdida irrecuperable de contenido)",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 18}, "collapsed": false
+    },
+    {
+      "id": 21, "type": "stat", "title": "Drops acumulados esta sesión por stream",
+      "gridPos": {"h": 4, "w": 24, "x": 0, "y": 19},
+      "options": {"colorMode": "background", "orientation": "auto", "textMode": "auto", "reduceOptions": {"calcs": ["lastNotNull"]}},
+      "fieldConfig": {"defaults": {"decimals": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": 0}, {"color": "yellow", "value": 1}, {"color": "red", "value": 100}]}, "color": {"mode": "thresholds"}}},
+      "targets": [{"datasource": {"uid": "prometheus"}, "expr": "max by (path)(mtx_srt_pkt_drop_total)", "legendFormat": "{{path}}", "refId": "A"}]
+    },
+    {
+      "id": 22, "type": "timeseries", "title": "Drops acumulados por stream (sube = hay daño real)",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 23},
+      "fieldConfig": {"defaults": {"decimals": 0, "custom": {"lineWidth": 2, "fillOpacity": 10}, "color": {"mode": "palette-classic"}}},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "max"]}, "tooltip": {"mode": "multi"}},
+      "targets": [{"datasource": {"uid": "prometheus"}, "expr": "max by (path)(mtx_srt_pkt_drop_total)", "legendFormat": "{{path}}", "refId": "A"}]
+    },
+
+    {
+      "id": 30, "type": "row", "title": "RTT (salud de red)",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 31}, "collapsed": false
+    },
+    {
+      "id": 31, "type": "stat", "title": "RTT por stream (ms)",
+      "gridPos": {"h": 4, "w": 24, "x": 0, "y": 32},
+      "options": {"colorMode": "background", "orientation": "auto", "textMode": "auto", "reduceOptions": {"calcs": ["lastNotNull"]}},
+      "fieldConfig": {"defaults": {"unit": "ms", "decimals": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": 0}, {"color": "yellow", "value": 50}, {"color": "red", "value": 150}]}, "color": {"mode": "thresholds"}}},
+      "targets": [{"datasource": {"uid": "prometheus"}, "expr": "max by (path)(mtx_srt_rtt_ms)", "legendFormat": "{{path}}", "refId": "A"}]
+    },
+    {
+      "id": 32, "type": "timeseries", "title": "RTT por stream (ms)",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 36},
+      "fieldConfig": {"defaults": {"unit": "ms", "decimals": 1, "custom": {"lineWidth": 2, "fillOpacity": 10}, "color": {"mode": "palette-classic"}}},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "max", "mean"]}, "tooltip": {"mode": "multi"}},
+      "targets": [{"datasource": {"uid": "prometheus"}, "expr": "max by (path)(mtx_srt_rtt_ms)", "legendFormat": "{{path}}", "refId": "A"}]
+    },
+
+    {
+      "id": 50, "type": "row", "title": "DIAGNÓSTICO — Loss / Retrans / Drops por segundo",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 44}, "collapsed": false
+    },
+    {
+      "id": 52, "type": "stat", "title": "Loss/s ahora por stream",
+      "gridPos": {"h": 4, "w": 8, "x": 0, "y": 45},
+      "options": {"colorMode": "background", "orientation": "auto", "textMode": "auto", "reduceOptions": {"calcs": ["lastNotNull"]}},
+      "fieldConfig": {"defaults": {"decimals": 1, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": 0}, {"color": "yellow", "value": 1}, {"color": "red", "value": 10}]}, "color": {"mode": "thresholds"}}},
+      "targets": [{"datasource": {"uid": "prometheus"}, "expr": "max by (path)(mtx_srt_loss_per_sec)", "legendFormat": "{{path}}", "refId": "A"}]
+    },
+    {
+      "id": 53, "type": "stat", "title": "Retrans/s ahora por stream",
+      "gridPos": {"h": 4, "w": 8, "x": 8, "y": 45},
+      "options": {"colorMode": "background", "orientation": "auto", "textMode": "auto", "reduceOptions": {"calcs": ["lastNotNull"]}},
+      "fieldConfig": {"defaults": {"decimals": 1, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": 0}, {"color": "yellow", "value": 1}, {"color": "red", "value": 10}]}, "color": {"mode": "thresholds"}}},
+      "targets": [{"datasource": {"uid": "prometheus"}, "expr": "max by (path)(mtx_srt_retrans_per_sec)", "legendFormat": "{{path}}", "refId": "A"}]
+    },
+    {
+      "id": 54, "type": "stat", "title": "Drops/s ahora por stream",
+      "gridPos": {"h": 4, "w": 8, "x": 16, "y": 45},
+      "options": {"colorMode": "background", "orientation": "auto", "textMode": "auto", "reduceOptions": {"calcs": ["lastNotNull"]}},
+      "fieldConfig": {"defaults": {"decimals": 1, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": 0}, {"color": "yellow", "value": 0.1}, {"color": "red", "value": 1}]}, "color": {"mode": "thresholds"}}},
+      "targets": [{"datasource": {"uid": "prometheus"}, "expr": "max by (path)(mtx_srt_drop_per_sec)", "legendFormat": "{{path}}", "refId": "A"}]
+    },
+    {
+      "id": 51, "type": "timeseries",
+      "title": "Loss · Retrans · Drops por segundo (por stream)",
+      "gridPos": {"h": 9, "w": 24, "x": 0, "y": 49},
+      "options": {
+        "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "max"]},
+        "tooltip": {"mode": "multi"}
+      },
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "custom": {"lineWidth": 2, "fillOpacity": 8},
+          "min": 0
+        },
+        "overrides": [
+          {
+            "matcher": {"id": "byFrameRefID", "options": "A"},
+            "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "#ef4444"}}]
+          },
+          {
+            "matcher": {"id": "byFrameRefID", "options": "B"},
+            "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "#eab308"}}]
+          },
+          {
+            "matcher": {"id": "byFrameRefID", "options": "C"},
+            "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "#f97316"}}]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": {"uid": "prometheus"},
+          "expr": "max by (path)(mtx_srt_loss_per_sec)",
+          "legendFormat": "Loss/s {{path}}",
+          "refId": "A"
+        },
+        {
+          "datasource": {"uid": "prometheus"},
+          "expr": "max by (path)(mtx_srt_retrans_per_sec)",
+          "legendFormat": "Retrans/s {{path}}",
+          "refId": "B"
+        },
+        {
+          "datasource": {"uid": "prometheus"},
+          "expr": "max by (path)(mtx_srt_drop_per_sec)",
+          "legendFormat": "Drops/s {{path}}",
+          "refId": "C"
+        }
+      ]
+    },
+
+    {
+      "id": 40, "type": "row", "title": "RESUMEN DE SESIÓN",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 55}, "collapsed": false
+    },
+    {
+      "id": 41, "type": "table", "title": "Estado actual por stream",
+      "gridPos": {"h": 6, "w": 24, "x": 0, "y": 56},
+      "options": {"sortBy": [{"desc": false, "displayName": "Stream"}]},
+      "fieldConfig": {"defaults": {}, "overrides": []},
+      "targets": [
+        {"datasource": {"uid": "prometheus"}, "expr": "max by (path)(mtx_srt_recv_rate_mbps)", "legendFormat": "{{path}}", "refId": "bitrate", "instant": true},
+        {"datasource": {"uid": "prometheus"}, "expr": "max by (path)(mtx_srt_rtt_ms)", "legendFormat": "{{path}}", "refId": "rtt", "instant": true},
+        {"datasource": {"uid": "prometheus"}, "expr": "max by (path)(mtx_srt_pkt_drop_total)", "legendFormat": "{{path}}", "refId": "drops", "instant": true},
+        {"datasource": {"uid": "prometheus"}, "expr": "max by (path)(mtx_srt_pkt_loss_total)", "legendFormat": "{{path}}", "refId": "loss", "instant": true},
+        {"datasource": {"uid": "prometheus"}, "expr": "max by (path)(mtx_srt_pkt_retrans_total)", "legendFormat": "{{path}}", "refId": "retrans", "instant": true}
+      ]
+    }
+
+  ]
+}
