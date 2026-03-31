@@ -25,6 +25,9 @@
   .btn-audio.active { background: #2563eb; border-color: #3b82f6; }
   .btn-hd { position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,.6); border: 1px solid rgba(255,255,255,.2); border-radius: 6px; color: #94a3b8; font-size: .7rem; font-weight: 700; letter-spacing: .06em; padding: 0 10px; height: 34px; display: flex; align-items: center; gap: 5px; cursor: pointer; transition: background .15s, color .15s, border-color .15s; user-select: none; }
   .btn-hd:hover { background: rgba(37,99,235,.7); border-color: #3b82f6; color: #fff; }
+  .btn-m3u8 { position: absolute; bottom: 10px; left: 80px; background: rgba(0,0,0,.6); border: 1px solid rgba(255,255,255,.2); border-radius: 6px; color: #94a3b8; font-size: .7rem; font-weight: 700; letter-spacing: .06em; padding: 0 10px; height: 34px; display: flex; align-items: center; gap: 5px; cursor: pointer; transition: background .15s, color .15s, border-color .15s; user-select: none; }
+  .btn-m3u8:hover { background: rgba(15,118,110,.7); border-color: #14b8a6; color: #fff; }
+  .btn-m3u8.copied { background: #0f766e; border-color: #14b8a6; color: #fff; }
   .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: #1e2433; border-top: 1px solid #1e2433; }
   .metric { background: #161b2e; padding: 10px 14px; display: flex; flex-direction: column; gap: 3px; }
   .metric-label { font-size: .65rem; color: #64748b; text-transform: uppercase; letter-spacing: .06em; }
@@ -152,6 +155,7 @@ function createCard(path) {
       '<span class="badge-live">LIVE</span>' +
       '<span class="badge-preview">480p</span>' +
       '<button class="btn-hd">&#9654; HD</button>' +
+      '<button class="btn-m3u8" title="Copiar link m3u8">&#128279; m3u8</button>' +
       '<button class="btn-audio">&#128263;</button>' +
     '</div>' +
     '<div class="metrics">' +
@@ -175,6 +179,16 @@ function createCard(path) {
     }
   });
   bHD.addEventListener('click', () => openModal(path));
+
+  const bM3 = el.querySelector('.btn-m3u8');
+  const m3u8url = location.protocol + '//' + location.hostname + ':8888/' + path + '/index.m3u8';
+  bM3.addEventListener('click', () => {
+    navigator.clipboard.writeText(m3u8url).then(() => {
+      bM3.classList.add('copied');
+      bM3.textContent = '\u2713 copiado';
+      setTimeout(() => { bM3.classList.remove('copied'); bM3.innerHTML = '&#128279; m3u8'; }, 2000);
+    });
+  });
 
   if (Hls.isSupported()) {
     const h = new Hls({ lowLatencyMode: true, liveSyncDurationCount: 2 });
