@@ -21,7 +21,7 @@ def start(path):
         "-i", f"{HLS_SRC}/{path}/index.m3u8",
         "-c:v", "libx264", "-preset", PRESET,
         "-b:v", BITRATE, "-maxrate", BITRATE, "-bufsize", "3000k",
-        "-vf", "scale=-2:480",
+        "-vf", "scale=-2:360",
         "-c:a", "aac", "-b:a", AUDIO_BR,
         "-f", "hls",
         "-hls_time", "2",
