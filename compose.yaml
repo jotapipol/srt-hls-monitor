@@ -28,6 +28,7 @@ services:
       - POLL_INTERVAL=3
       - PREVIEW_BITRATE=1500k
       - FFMPEG_PRESET=veryfast
+      - FFMPEG_THREADS=2
     depends_on:
       - mediamtx
 

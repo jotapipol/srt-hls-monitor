@@ -14,8 +14,10 @@ procs = {}  # path → Popen
 def start(path):
     out = f"{OUTPUT_DIR}/{path}"
     os.makedirs(out, exist_ok=True)
+    threads = os.getenv("FFMPEG_THREADS", "2")
     cmd = [
         "ffmpeg", "-y",
+        "-threads", threads,
         "-i", f"{HLS_SRC}/{path}/index.m3u8",
         "-c:v", "libx264", "-preset", PRESET,
         "-b:v", BITRATE, "-maxrate", BITRATE, "-bufsize", "3000k",
