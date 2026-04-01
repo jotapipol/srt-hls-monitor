@@ -12,7 +12,10 @@
   #status { margin-left: auto; font-size: .75rem; color: #64748b; }
   #no-streams { text-align: center; color: #475569; margin-top: 80px; font-size: 1rem; }
   #grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(480px, 1fr)); gap: 20px; }
-  .card { background: #161b2e; border: 1px solid #1e2a45; border-radius: 10px; overflow: hidden; transition: opacity .3s; }
+  .card { background: #161b2e; border: 1px solid #1e2a45; border-radius: 10px; overflow: hidden; transition: opacity .3s, border-color .3s, box-shadow .3s; }
+  .card.freeze-warn { border-color: #f59e0b; box-shadow: 0 0 0 2px #f59e0b44; }
+  .card.freeze-hard { border-color: #ef4444; box-shadow: 0 0 16px 4px #ef444466; animation: freeze-pulse 1s infinite; }
+  @keyframes freeze-pulse { 0%,100% { box-shadow: 0 0 16px 4px #ef444466; } 50% { box-shadow: 0 0 32px 8px #ef4444aa; } }
   .card.fade-in { animation: fadeIn .4s ease; }
   .card.fade-out { opacity: 0; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
@@ -146,7 +149,7 @@ const FREEZE_WARN_SECS = 4;              // segundos hasta badge amarillo
 const FREEZE_HARD_SECS = 10;            // segundos hasta badge rojo
 const FREEZE_DEBUG = true;              // loguear diff a consola para calibrar
 
-function startFreezeDetector(video, badge) {
+function startFreezeDetector(video, badge, card) {
   const canvas = document.createElement('canvas');
   canvas.width = FREEZE_W; canvas.height = FREEZE_H;
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
@@ -156,14 +159,19 @@ function startFreezeDetector(video, badge) {
     if (!frozenSince) frozenSince = Date.now();
     const secs = (Date.now() - frozenSince) / 1000;
     if (secs >= FREEZE_WARN_SECS) {
+      const hard = secs >= FREEZE_HARD_SECS;
       badge.style.display = '';
-      badge.classList.toggle('hard', secs >= FREEZE_HARD_SECS);
+      badge.classList.toggle('hard', hard);
       badge.textContent = 'FREEZE ' + Math.round(secs) + 's';
+      card.classList.toggle('freeze-warn', !hard);
+      card.classList.toggle('freeze-hard', hard);
     }
   };
 
   const clearFrozen = () => {
-    frozenSince = null; badge.style.display = 'none'; badge.classList.remove('hard');
+    frozenSince = null;
+    badge.style.display = 'none'; badge.classList.remove('hard');
+    card.classList.remove('freeze-warn', 'freeze-hard');
   };
 
   const tick = () => {
@@ -271,7 +279,7 @@ function createCard(path) {
   }
 
   const freezeBadge = el.querySelector('.badge-freeze');
-  cards[path].freezeTimer = startFreezeDetector(vid, freezeBadge);
+  cards[path].freezeTimer = startFreezeDetector(vid, freezeBadge, el);
 
   return el;
 }
