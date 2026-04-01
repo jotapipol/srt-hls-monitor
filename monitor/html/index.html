@@ -271,6 +271,24 @@ function fallbackCopy(text, cb) {
   document.body.removeChild(ta);
 }
 
+// Al volver a la pestaña, forzar todos los players al borde live
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  for (const path of Object.keys(cards)) {
+    const c = cards[path];
+    const v = c.hls ? c.hls.media : null;
+    if (!v) continue;
+    if (c.hls) {
+      // Reiniciar carga y saltar al borde live
+      c.hls.startLoad(-1);
+    }
+    if (v.seekable && v.seekable.length > 0) {
+      v.currentTime = v.seekable.end(v.seekable.length - 1);
+    }
+    if (v.paused) v.play().catch(() => {});
+  }
+});
+
 poll();
 setInterval(poll, POLL);
 </script>
