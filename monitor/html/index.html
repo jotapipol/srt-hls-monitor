@@ -80,7 +80,7 @@
 // PREVIEW_MODE: 'transcode' usa /hls-preview (requiere servicio transcoder con ffmpeg).
 // En producción con recursos suficientes cambiar a 'transcode'.
 // 'passthrough' sirve el HLS original directamente — sin transcode, sin overhead de CPU.
-const PREVIEW_MODE = 'transcode';
+const PREVIEW_MODE = 'passthrough';
 const PREV = PREVIEW_MODE === 'transcode' ? '/hls-preview' : '/hls-full';
 const FULL = '/hls-full';
 const API  = '/api/mediamtx';

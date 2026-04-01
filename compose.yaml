@@ -19,10 +19,6 @@ services:
     container_name: srt-transcoder
     restart: unless-stopped
     network_mode: host
-    deploy:
-      resources:
-        limits:
-          cpus: '0.8'
     volumes:
       - ./data/hls_preview:/data/hls_preview
     environment:
@@ -102,6 +98,35 @@ services:
       - "${SPEEDTEST_PORT:-9800}:3000"
       - "${SPEEDTEST_PORT_SSL:-9801}:3001"
 
+  netdata:
+    image: netdata/netdata:latest
+    container_name: netdata
+    restart: unless-stopped
+    pid: host
+    network_mode: host
+    cap_add:
+      - SYS_PTRACE
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - netdataconfig:/etc/netdata
+      - netdatalib:/var/lib/netdata
+      - netdatacache:/var/cache/netdata
+      - /:/host/root:ro,rslave
+      - /etc/passwd:/host/etc/passwd:ro
+      - /etc/group:/host/etc/group:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /etc/os-release:/host/etc/os-release:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - NETDATA_CLAIM_TOKEN=${NETDATA_CLAIM_TOKEN:-}
+      - NETDATA_CLAIM_URL=https://app.netdata.cloud
+      - NETDATA_CLAIM_ROOMS=${NETDATA_CLAIM_ROOMS:-}
+    ports:
+      - "${NETDATA_PORT:-19999}:19999"
+
 networks:
   monitoring:
     driver: bridge
@@ -109,3 +134,6 @@ networks:
 volumes:
   prometheus_data:
   grafana_data:
+  netdataconfig:
+  netdatalib:
+  netdatacache:
