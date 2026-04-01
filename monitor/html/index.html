@@ -140,9 +140,10 @@ function colorDrop(v) { return v === 0 ? 'green' : v < 100 ? 'yellow' : 'red'; }
 
 // ── Freeze detection ─────────────────────────────────────────
 const FREEZE_W = 64, FREEZE_H = 36;      // canvas de muestreo (pequeño = barato)
-const FREEZE_DIFF_THRESHOLD = 1.2;       // diferencia media por píxel (0–255) bajo la cual = frozen
+const FREEZE_DIFF_THRESHOLD = 6.0;       // diferencia media por píxel (0–255) bajo la cual = frozen
 const FREEZE_WARN_SECS = 4;              // segundos hasta badge amarillo
 const FREEZE_HARD_SECS = 10;            // segundos hasta badge rojo
+const FREEZE_DEBUG = true;              // loguear diff a consola para calibrar
 
 function startFreezeDetector(video, badge) {
   const canvas = document.createElement('canvas');
@@ -184,7 +185,9 @@ function startFreezeDetector(video, badge) {
         let sum = 0;
         for (let i = 0; i < curr.length; i += 4)
           sum += Math.abs(curr[i]-prevData[i]) + Math.abs(curr[i+1]-prevData[i+1]) + Math.abs(curr[i+2]-prevData[i+2]);
-        if (sum / (FREEZE_W * FREEZE_H) < FREEZE_DIFF_THRESHOLD) markFrozen();
+        const meanDiff = sum / (FREEZE_W * FREEZE_H);
+        if (FREEZE_DEBUG) console.log('[freeze]', video.closest('.card')?.querySelector('.stream-name')?.textContent?.trim(), 'diff=', meanDiff.toFixed(2));
+        if (meanDiff < FREEZE_DIFF_THRESHOLD) markFrozen();
         else clearFrozen();
       }
       prevData = curr;
