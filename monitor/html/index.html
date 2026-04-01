@@ -13,9 +13,9 @@
   #no-streams { text-align: center; color: #475569; margin-top: 80px; font-size: 1rem; }
   #grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(480px, 1fr)); gap: 20px; }
   .card { background: #161b2e; border: 1px solid #1e2a45; border-radius: 10px; overflow: hidden; transition: opacity .3s, border-color .3s, box-shadow .3s; }
-  .card.freeze-warn { border-color: #f59e0b; box-shadow: 0 0 0 2px #f59e0b44; }
-  .card.freeze-hard { border-color: #ef4444; box-shadow: 0 0 16px 4px #ef444466; animation: freeze-pulse 1s infinite; }
-  @keyframes freeze-pulse { 0%,100% { box-shadow: 0 0 16px 4px #ef444466; } 50% { box-shadow: 0 0 32px 8px #ef4444aa; } }
+  .card.freeze-warn { background: #2d1f00; border-color: #f59e0b; box-shadow: 0 0 0 2px #f59e0b44; }
+  .card.freeze-hard { background: #2d0000; border-color: #ef4444; box-shadow: 0 0 16px 4px #ef444466; animation: freeze-pulse 1s infinite; }
+  @keyframes freeze-pulse { 0%,100% { background: #2d0000; box-shadow: 0 0 16px 4px #ef444466; } 50% { background: #3d0000; box-shadow: 0 0 32px 8px #ef4444aa; } }
   .card.fade-in { animation: fadeIn .4s ease; }
   .card.fade-out { opacity: 0; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
