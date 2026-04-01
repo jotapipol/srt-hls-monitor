@@ -22,6 +22,7 @@
   .badge-preview { position: absolute; top: 10px; left: 56px; background: #334155; color: #94a3b8; font-size: .65rem; font-weight: 600; padding: 2px 7px; border-radius: 4px; }
   .badge-freeze { display: none; position: absolute; top: 10px; right: 10px; background: #f59e0b; color: #000; font-size: .65rem; font-weight: 800; letter-spacing: .08em; padding: 2px 7px; border-radius: 4px; animation: pulse 1s infinite; }
   .badge-freeze.hard { background: #ef4444; color: #fff; }
+  .badge-diff { position: absolute; bottom: 52px; right: 10px; background: rgba(0,0,0,.55); color: #94a3b8; font-size: .6rem; font-family: monospace; padding: 2px 6px; border-radius: 4px; pointer-events: none; }
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .5; } }
   .btn-audio { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,.6); border: 1px solid rgba(255,255,255,.2); border-radius: 6px; color: #fff; font-size: 1.1rem; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background .15s; user-select: none; }
   .btn-audio:hover { background: rgba(0,0,0,.85); }
@@ -187,6 +188,8 @@ function startFreezeDetector(video, badge) {
           sum += Math.abs(curr[i]-prevData[i]) + Math.abs(curr[i+1]-prevData[i+1]) + Math.abs(curr[i+2]-prevData[i+2]);
         const meanDiff = sum / (FREEZE_W * FREEZE_H);
         if (FREEZE_DEBUG) console.log('[freeze]', video.closest('.card')?.querySelector('.stream-name')?.textContent?.trim(), 'diff=', meanDiff.toFixed(2));
+        const diffBadge = video.closest('.video-wrap')?.querySelector('.badge-diff');
+        if (diffBadge) diffBadge.textContent = 'diff: ' + meanDiff.toFixed(1);
         if (meanDiff < FREEZE_DIFF_THRESHOLD) markFrozen();
         else clearFrozen();
       }
@@ -216,6 +219,7 @@ function createCard(path) {
       '<span class="badge-live">LIVE</span>' +
       '<span class="badge-preview">360p</span>' +
       '<span class="badge-freeze"></span>' +
+      '<span class="badge-diff">diff: —</span>' +
       '<button class="btn-hd">&#9654; HD</button>' +
       '<button class="btn-m3u8" title="Copiar link m3u8">&#128279; m3u8</button>' +
       '<button class="btn-audio">&#128263;</button>' +
