@@ -65,14 +65,18 @@ echo "  Presioná Enter para aceptar el valor por defecto [entre corchetes]"
 echo ""
 
 prompt() {
-  local label="$1" default="$2" var="$3" secret="$4"
+  local label="$1"
+  local default="$2"
+  local var="$3"
+  local secret="$4"
+  local input=""
   if [ "$secret" = "1" ]; then
     read -rsp "  $label [$default]: " input
     echo ""
   else
     read -rp "  $label [$default]: " input
   fi
-  eval "$var=\"${input:-$default}\""
+  printf -v "$var" '%s' "${input:-$default}"
 }
 
 prompt "Puerto Grafana"          "3000"     GRAFANA_PORT

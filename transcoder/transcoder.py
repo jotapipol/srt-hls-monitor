@@ -16,10 +16,6 @@ def start(path):
     os.makedirs(out, exist_ok=True)
     cmd = [
         "ffmpeg", "-y",
-        "-reconnect", "1",
-        "-reconnect_at_eof", "1",
-        "-reconnect_streamed", "1",
-        "-reconnect_delay_max", "5",
         "-i", f"{HLS_SRC}/{path}/index.m3u8",
         "-c:v", "libx264", "-preset", PRESET,
         "-b:v", BITRATE, "-maxrate", BITRATE, "-bufsize", "3000k",
