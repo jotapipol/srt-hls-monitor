@@ -183,11 +183,16 @@ function createCard(path) {
   const bM3 = el.querySelector('.btn-m3u8');
   const m3u8url = location.origin + '/hls-full/' + path + '/index.m3u8';
   bM3.addEventListener('click', () => {
-    navigator.clipboard.writeText(m3u8url).then(() => {
+    const copied = () => {
       bM3.classList.add('copied');
       bM3.textContent = '\u2713 copiado';
       setTimeout(() => { bM3.classList.remove('copied'); bM3.innerHTML = '&#128279; m3u8'; }, 2000);
-    });
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(m3u8url).then(copied).catch(() => fallbackCopy(m3u8url, copied));
+    } else {
+      fallbackCopy(m3u8url, copied);
+    }
   });
 
   if (Hls.isSupported()) {
@@ -254,6 +259,16 @@ async function poll() {
   } catch (e) {
     status.textContent = 'error: ' + e.message;
   }
+}
+
+function fallbackCopy(text, cb) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+  document.body.appendChild(ta);
+  ta.focus(); ta.select();
+  try { document.execCommand('copy'); cb(); } catch(e) { alert(text); }
+  document.body.removeChild(ta);
 }
 
 poll();
