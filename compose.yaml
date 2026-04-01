@@ -26,7 +26,7 @@ services:
       - HLS_SRC_BASE=http://localhost:8888
       - OUTPUT_DIR=/data/hls_preview
       - POLL_INTERVAL=3
-      - PREVIEW_BITRATE=1000k
+      - PREVIEW_BITRATE=600k
       - FFMPEG_PRESET=veryfast
       - FFMPEG_THREADS=2
     depends_on:

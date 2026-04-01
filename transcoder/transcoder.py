@@ -20,7 +20,7 @@ def start(path):
         "-threads", threads,
         "-i", f"{HLS_SRC}/{path}/index.m3u8",
         "-c:v", "libx264", "-preset", PRESET,
-        "-b:v", BITRATE, "-maxrate", BITRATE, "-bufsize", "3000k",
+        "-b:v", BITRATE, "-maxrate", BITRATE, "-bufsize", "1200k",
         "-vf", "scale=-2:360",
         "-c:a", "aac", "-b:a", AUDIO_BR,
         "-f", "hls",
