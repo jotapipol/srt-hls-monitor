@@ -19,6 +19,10 @@ services:
     container_name: srt-transcoder
     restart: unless-stopped
     network_mode: host
+    deploy:
+      resources:
+        limits:
+          cpus: '0.8'
     volumes:
       - ./data/hls_preview:/data/hls_preview
     environment:

@@ -55,12 +55,11 @@ print(f"Transcoder iniciado — API={API}  src={HLS_SRC}  out={OUTPUT_DIR}  poll
 
 while True:
     try:
-        items  = requests.get(f"{API}/v3/paths/list", timeout=10).json().get("items", [])
+        items  = requests.get(f"{API}/v3/paths/list", timeout=3).json().get("items", [])
         active = {p["name"] for p in items if p.get("ready")}
 
         for path in active - set(procs):
             start(path)
-        # Solo matar si la API respondió correctamente y dice que el stream ya no existe
         for path in set(procs) - active:
             stop(path)
 
@@ -73,7 +72,6 @@ while True:
                     start(path)
 
     except Exception as e:
-        # API timeout u otro error: NO tocar los procesos ffmpeg que están corriendo
-        print(f"[poll error, manteniendo procesos activos] {e}", flush=True)
+        print(f"[error] {e}", flush=True)
 
     time.sleep(POLL)

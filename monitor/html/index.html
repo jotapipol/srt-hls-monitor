@@ -181,7 +181,7 @@ function createCard(path) {
   bHD.addEventListener('click', () => openModal(path));
 
   const bM3 = el.querySelector('.btn-m3u8');
-  const m3u8url = location.protocol + '//' + location.hostname + ':8888/' + path + '/index.m3u8';
+  const m3u8url = location.origin + '/hls-full/' + path + '/index.m3u8';
   bM3.addEventListener('click', () => {
     navigator.clipboard.writeText(m3u8url).then(() => {
       bM3.classList.add('copied');
