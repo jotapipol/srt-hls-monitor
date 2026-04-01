@@ -64,12 +64,6 @@ echo -e "${CYAN}── Configuración ──────────────
 echo "  Presioná Enter para aceptar el valor por defecto [entre corchetes]"
 echo ""
 
-# Si el script se ejecutó via pipe (curl | bash), stdin es el pipe, no la terminal.
-# Redirigir stdin a /dev/tty para que read pueda leer del usuario.
-if [ ! -t 0 ]; then
-  exec < /dev/tty
-fi
-
 prompt() {
   local label="$1"
   local default="$2"
@@ -77,10 +71,10 @@ prompt() {
   local secret="$4"
   local input=""
   if [ "$secret" = "1" ]; then
-    read -rsp "  $label [$default]: " input || true
-    echo ""
+    read -rsp "  $label [$default]: " input </dev/tty 2>/dev/tty || true
+    echo "" >/dev/tty
   else
-    read -rp "  $label [$default]: " input || true
+    read -rp "  $label [$default]: " input </dev/tty 2>/dev/tty || true
   fi
   printf -v "$var" '%s' "${input:-$default}"
 }
