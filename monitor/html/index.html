@@ -148,12 +148,35 @@ function startFreezeDetector(video, badge) {
   const canvas = document.createElement('canvas');
   canvas.width = FREEZE_W; canvas.height = FREEZE_H;
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
-  let prevData = null, frozenSince = null;
+  let prevData = null, prevTime = null, frozenSince = null;
+
+  const markFrozen = () => {
+    if (!frozenSince) frozenSince = Date.now();
+    const secs = (Date.now() - frozenSince) / 1000;
+    if (secs >= FREEZE_WARN_SECS) {
+      badge.style.display = '';
+      badge.classList.toggle('hard', secs >= FREEZE_HARD_SECS);
+      badge.textContent = 'FREEZE ' + Math.round(secs) + 's';
+    }
+  };
+
+  const clearFrozen = () => {
+    frozenSince = null; badge.style.display = 'none'; badge.classList.remove('hard');
+  };
 
   const tick = () => {
-    if (video.readyState < 2 || video.paused || video.ended) {
-      prevData = null; frozenSince = null; badge.style.display = 'none'; return;
+    // Stream cortado o stalled: currentTime no avanza y el video no está manualmente pausado
+    if (!video.paused && !video.ended && prevTime !== null && video.currentTime === prevTime) {
+      markFrozen(); prevTime = video.currentTime; return;
     }
+    prevTime = video.currentTime;
+
+    // Video no tiene datos suficientes para dibujar (buffering inicial)
+    if (video.readyState < 2 || video.paused || video.ended) {
+      prevData = null; return;
+    }
+
+    // Canvas diff: mismos píxeles = imagen congelada aunque el tiempo avance
     try {
       ctx.drawImage(video, 0, 0, FREEZE_W, FREEZE_H);
       const curr = ctx.getImageData(0, 0, FREEZE_W, FREEZE_H).data;
@@ -161,21 +184,11 @@ function startFreezeDetector(video, badge) {
         let sum = 0;
         for (let i = 0; i < curr.length; i += 4)
           sum += Math.abs(curr[i]-prevData[i]) + Math.abs(curr[i+1]-prevData[i+1]) + Math.abs(curr[i+2]-prevData[i+2]);
-        const meanDiff = sum / (FREEZE_W * FREEZE_H);
-        if (meanDiff < FREEZE_DIFF_THRESHOLD) {
-          if (!frozenSince) frozenSince = Date.now();
-          const secs = (Date.now() - frozenSince) / 1000;
-          if (secs >= FREEZE_WARN_SECS) {
-            badge.style.display = '';
-            badge.classList.toggle('hard', secs >= FREEZE_HARD_SECS);
-            badge.textContent = 'FREEZE ' + Math.round(secs) + 's';
-          }
-        } else {
-          frozenSince = null; badge.style.display = 'none'; badge.classList.remove('hard');
-        }
+        if (sum / (FREEZE_W * FREEZE_H) < FREEZE_DIFF_THRESHOLD) markFrozen();
+        else clearFrozen();
       }
       prevData = curr;
-    } catch(e) { /* tained canvas en algunos browsers */ }
+    } catch(e) {}
   };
   return setInterval(tick, 2000);
 }
