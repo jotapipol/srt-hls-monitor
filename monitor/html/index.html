@@ -322,6 +322,13 @@ function createCard(path) {
     const h = new Hls({ lowLatencyMode: true, liveSyncDurationCount: 2 });
     h.loadSource(src);
     h.attachMedia(vid);
+    h.on(Hls.Events.MANIFEST_PARSED, () => { vid.play().catch(() => {}); });
+    h.on(Hls.Events.ERROR, (_, data) => {
+      if (data.fatal) {
+        // m3u8 no existe todavía (transcoder arrancando) → reintentar en 2s
+        setTimeout(() => { if (cards[path]) { h.loadSource(src); } }, 2000);
+      }
+    });
     cards[path].hls = h;
   } else if (vid.canPlayType('application/vnd.apple.mpegurl')) {
     vid.src = src;
