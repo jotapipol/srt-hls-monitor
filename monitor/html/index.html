@@ -147,33 +147,46 @@ let audioCtx = null;
 let alertInterval = null;
 let frozenPaths = new Set();
 
-function playFreezeAlert() {
-  try {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    // Dos tonos suaves: Do5 + Mi5 (523 + 659 Hz), tipo chime tranquilo
-    [[523, 0], [659, 0.18]].forEach(([freq, delay]) => {
-      const osc  = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.connect(gain); gain.connect(audioCtx.destination);
-      osc.type = 'sine';
-      osc.frequency.value = freq;
-      const t = audioCtx.currentTime + delay;
-      gain.gain.setValueAtTime(0, t);
-      gain.gain.linearRampToValueAtTime(0.18, t + 0.04);
-      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.7);
-      osc.start(t); osc.stop(t + 0.7);
-    });
-  } catch(e) {}
+function beep(freq, delay, duration, vol, type) {
+  const osc  = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.type = type || 'sine';
+  osc.frequency.value = freq;
+  const t = audioCtx.currentTime + delay;
+  gain.gain.setValueAtTime(0, t);
+  gain.gain.linearRampToValueAtTime(vol, t + 0.03);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+  osc.start(t); osc.stop(t + duration);
 }
+
+// Nivel 1 (1 stream): chime Do+Mi, tranquilo, cada 5s
+function playAlert1() {
+  [[523, 0], [659, 0.2]].forEach(([f, d]) => beep(f, d, 0.7, 0.22));
+}
+
+// Nivel 2 (2 streams): tres pitidos urgentes, cada 3s
+function playAlert2() {
+  [0, 0.18, 0.36].forEach(d => beep(880, d, 0.25, 0.32, 'square'));
+}
+
+// Nivel 3 (3+ streams): alarma crítica descendente repetida, cada 1.5s
+function playAlert3() {
+  [[1200, 0], [900, 0.22], [1200, 0.44], [900, 0.66]].forEach(([f, d]) => beep(f, d, 0.28, 0.45, 'sawtooth'));
+}
+
+function getAlarmLevel() { return frozenPaths.size >= 3 ? 3 : frozenPaths.size === 2 ? 2 : frozenPaths.size === 1 ? 1 : 0; }
 
 function updateFreezeAudio(path, frozen) {
   if (frozen) frozenPaths.add(path); else frozenPaths.delete(path);
-  if (frozenPaths.size > 0 && !alertInterval) {
-    playFreezeAlert();
-    alertInterval = setInterval(playFreezeAlert, 5000);
-  } else if (frozenPaths.size === 0 && alertInterval) {
-    clearInterval(alertInterval); alertInterval = null;
-  }
+  if (alertInterval) { clearInterval(alertInterval); alertInterval = null; }
+  const level = getAlarmLevel();
+  if (level === 0) return;
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const fn       = [null, playAlert1, playAlert2, playAlert3][level];
+  const interval = [null, 5000,       3000,        1500      ][level];
+  try { fn(); } catch(e) {}
+  alertInterval = setInterval(() => { try { fn(); } catch(e) {} }, interval);
 }
 
 // ── Freeze detection ─────────────────────────────────────────
