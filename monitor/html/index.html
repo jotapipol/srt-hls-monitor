@@ -142,6 +142,40 @@ mAudio.addEventListener('click', () => {
 function colorRTT(v)  { return v < 50 ? 'green' : v < 150 ? 'yellow' : 'red'; }
 function colorDrop(v) { return v === 0 ? 'green' : v < 100 ? 'yellow' : 'red'; }
 
+// ── Audio alert ──────────────────────────────────────────────
+let audioCtx = null;
+let alertInterval = null;
+let frozenPaths = new Set();
+
+function playFreezeAlert() {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // Dos tonos suaves: Do5 + Mi5 (523 + 659 Hz), tipo chime tranquilo
+    [[523, 0], [659, 0.18]].forEach(([freq, delay]) => {
+      const osc  = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      const t = audioCtx.currentTime + delay;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.18, t + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.7);
+      osc.start(t); osc.stop(t + 0.7);
+    });
+  } catch(e) {}
+}
+
+function updateFreezeAudio(path, frozen) {
+  if (frozen) frozenPaths.add(path); else frozenPaths.delete(path);
+  if (frozenPaths.size > 0 && !alertInterval) {
+    playFreezeAlert();
+    alertInterval = setInterval(playFreezeAlert, 5000);
+  } else if (frozenPaths.size === 0 && alertInterval) {
+    clearInterval(alertInterval); alertInterval = null;
+  }
+}
+
 // ── Freeze detection ─────────────────────────────────────────
 const FREEZE_W = 64, FREEZE_H = 36;      // canvas de muestreo (pequeño = barato)
 const FREEZE_DIFF_THRESHOLD = 6.0;       // diferencia media por píxel (0–255) bajo la cual = frozen
@@ -149,7 +183,7 @@ const FREEZE_WARN_SECS = 4;              // segundos hasta badge amarillo
 const FREEZE_HARD_SECS = 10;            // segundos hasta badge rojo
 const FREEZE_DEBUG = true;              // loguear diff a consola para calibrar
 
-function startFreezeDetector(video, badge, card) {
+function startFreezeDetector(video, badge, card, path) {
   const canvas = document.createElement('canvas');
   canvas.width = FREEZE_W; canvas.height = FREEZE_H;
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
@@ -165,6 +199,7 @@ function startFreezeDetector(video, badge, card) {
       badge.textContent = 'FREEZE ' + Math.round(secs) + 's';
       card.classList.toggle('freeze-warn', !hard);
       card.classList.toggle('freeze-hard', hard);
+      updateFreezeAudio(path, true);
     }
   };
 
@@ -172,6 +207,7 @@ function startFreezeDetector(video, badge, card) {
     frozenSince = null;
     badge.style.display = 'none'; badge.classList.remove('hard');
     card.classList.remove('freeze-warn', 'freeze-hard');
+    updateFreezeAudio(path, false);
   };
 
   const tick = () => {
@@ -279,7 +315,7 @@ function createCard(path) {
   }
 
   const freezeBadge = el.querySelector('.badge-freeze');
-  cards[path].freezeTimer = startFreezeDetector(vid, freezeBadge, el);
+  cards[path].freezeTimer = startFreezeDetector(vid, freezeBadge, el, path);
 
   return el;
 }
@@ -289,6 +325,7 @@ function removeCard(path) {
   if (!c) return;
   if (c.hls) c.hls.destroy();
   if (c.freezeTimer) clearInterval(c.freezeTimer);
+  updateFreezeAudio(path, false);
   c.el.classList.add('fade-out');
   setTimeout(() => { c.el.remove(); delete cards[path]; }, 350);
 }
